@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title th:text="${title}">Votación</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 0; padding: 16px; background:#0b132b; color:#fff; }
+    h1 { text-align:center; }
+    .grid { display:grid; grid-template-columns:1fr; gap:12px; max-width:420px; margin:12px auto; }
+    @media (min-width:480px){ .grid { grid-template-columns:1fr 1fr; } }
+    button { padding:18px; font-size:18px; border-radius:12px; border:none; color:#0b132b; font-weight:700; }
+    .michoacan { background:#ffd166; }
+    .oaxaca { background:#ef476f; }
+    .jalisco { background:#06d6a0; }
+    .guanajuato { background:#118ab2; color:white; }
+    .card { background:#1c2541; padding:12px; border-radius:12px; max-width:420px; margin:0 auto; }
+    .row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #263055; }
+    .row:last-child { border-bottom:none; }
+    .status { text-align:center; margin:8px 0 16px; }
+    .muted { opacity:.8; }
+    .footer { text-align:center; margin-top:24px; font-size:12px; opacity:.7; }
+  </style>
+</head>
+<body>
+  <h1>Votación en vivo</h1>
+  <div class="status">
+    <div id="openMsg">Verificando estado de la votación...</div>
+    <div id="timer" class="muted"></div>
+  </div>
+  <div class="grid">
+    <button class="michoacan" onclick="sendVote('MICHOACAN')">Michoacán</button>
+    <button class="oaxaca" onclick="sendVote('OAXACA')">Oaxaca</button>
+    <button class="jalisco" onclick="sendVote('JALISCO')">Jalisco</button>
+    <button class="guanajuato" onclick="sendVote('GUANAJUATO')">Guanajuato</button>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <div class="row"><div>Michoacán</div><div id="r-michoacan">0</div></div>
+    <div class="row"><div>Oaxaca</div><div id="r-oaxaca">0</div></div>
+    <div class="row"><div>Jalisco</div><div id="r-jalisco">0</div></div>
+    <div class="row"><div>Guanajuato</div><div id="r-guanajuato">0</div></div>
+  </div>
+
+  <div class="footer">Puedes votar múltiples veces mientras la votación esté abierta.</div>
+
+<script>
+async function sendVote(option) {
+  try {
+    const res = await fetch(`/api/vote/${option}`, { method: 'POST' });
+    if (!res.ok) {
+      const data = await res.json().catch(()=>({}));
+      alert(data.error || 'La votación no está abierta.');
+    }
+  } catch (e) { console.error(e); }
+}
+
+async function refreshResults(){
+  try{
+    const res = await fetch('/api/results');
+    const data = await res.json();
+    document.getElementById('r-michoacan').textContent = data.MICHOACAN ?? 0;
+    document.getElementById('r-oaxaca').textContent = data.OAXACA ?? 0;
+    document.getElementById('r-jalisco').textContent = data.JALISCO ?? 0;
+    document.getElementById('r-guanajuato').textContent = data.GUANAJUATO ?? 0;
+  }catch(e){ console.error(e); }
+}
+
+async function refreshStatus(){
+  try{
+    const res = await fetch('/api/session-status');
+    const data = await res.json();
+    document.getElementById('openMsg').textContent = data.open ? 'Votación abierta' : 'Votación cerrada';
+    const t = data.remainingSeconds|0;
+    if (data.open) {
+      document.getElementById('timer').textContent = `Tiempo restante: ${t}s`;
+    } else {
+      document.getElementById('timer').textContent = '';
+    }
+  }catch(e){ console.error(e); }
+}
+
+setInterval(()=>{ refreshResults(); refreshStatus(); }, 1000);
+refreshResults();
+refreshStatus();
+</script>
+</body>
+</html>
