@@ -1,86 +1,472 @@
-<!doctype html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title th:text="${title}">Votación</title>
-  <style>
-    body { font-family: system-ui, Arial, sans-serif; margin: 0; padding: 16px; background:#0b132b; color:#fff; }
-    h1 { text-align:center; }
-    .grid { display:grid; grid-template-columns:1fr; gap:12px; max-width:420px; margin:12px auto; }
-    @media (min-width:480px){ .grid { grid-template-columns:1fr 1fr; } }
-    button { padding:18px; font-size:18px; border-radius:12px; border:none; color:#0b132b; font-weight:700; }
-    .michoacan { background:#ffd166; }
-    .oaxaca { background:#ef476f; }
-    .jalisco { background:#06d6a0; }
-    .guanajuato { background:#118ab2; color:white; }
-    .card { background:#1c2541; padding:12px; border-radius:12px; max-width:420px; margin:0 auto; }
-    .row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #263055; }
-    .row:last-child { border-bottom:none; }
-    .status { text-align:center; margin:8px 0 16px; }
-    .muted { opacity:.8; }
-    .footer { text-align:center; margin-top:24px; font-size:12px; opacity:.7; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vota - ¿Cuál es tu estado favorito?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    button:hover {
-        background-color: #0056b3;
-        transform: scale(1.1); /* efecto de agrandado */
-    }
-  </style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .status.open {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .status.closed {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .vote-buttons {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .vote-btn {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            transform: translateY(0);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Efecto de onda al hacer clic */
+        .vote-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .vote-btn.clicked::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Animación de escala al hacer clic */
+        .vote-btn:active {
+            transform: scale(0.95) translateY(2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Hover effect */
+        .vote-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Animación de éxito después del clic */
+        @keyframes success-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .vote-btn.success {
+            animation: success-pulse 0.5s ease;
+        }
+
+        /* Animación de checkmark */
+        @keyframes checkmark {
+            0% { transform: scale(0) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+
+        .vote-btn .checkmark {
+            display: none;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+        }
+
+        .vote-btn.success .checkmark {
+            display: inline-block;
+            animation: checkmark 0.5s ease;
+        }
+
+        .vote-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .michoacan {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .oaxaca {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .jalisco {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .guanajuato {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .results {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+        }
+
+        .results h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 22px;
+            text-align: center;
+        }
+
+        .result-item {
+            margin-bottom: 15px;
+        }
+
+        .result-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .progress-bar {
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .message.show {
+            opacity: 1;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        /* Animación de carga en los botones */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .vote-btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .vote-btn.loading .spinner {
+            display: inline-block;
+        }
+
+        .vote-btn.loading {
+            pointer-events: none;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .vote-btn {
+                padding: 18px;
+                font-size: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>Votación en vivo</h1>
-  <div class="status">
-    <div id="openMsg">Verificando estado de la votación...</div>
-    <div id="timer" class="muted"></div>
-  </div>
-  <div class="grid">
-    <button class="michoacan" onclick="sendVote('MICHOACAN')">Michoacán</button>
-    <button class="oaxaca" onclick="sendVote('OAXACA')">Oaxaca</button>
-    <button class="jalisco" onclick="sendVote('JALISCO')">Jalisco</button>
-    <button class="guanajuato" onclick="sendVote('GUANAJUATO')">Guanajuato</button>
-  </div>
+<div class="container">
+    <h1>🗳️ Quick Vote</h1>
+    <p class="subtitle">¿Cuál es tu estado mexicano favorito?</p>
 
-  <div class="footer">Puedes votar múltiples veces mientras la votación esté abierta.</div>
+    <div id="status" class="status closed">
+        <span id="status-text">Cargando...</span>
+    </div>
+
+    <div class="vote-buttons">
+        <button class="vote-btn michoacan" onclick="vote('MICHOACAN', this)" id="btn-michoacan">
+            <span class="spinner"></span>
+            <span class="checkmark">✓</span>
+            🦋 Michoacán
+        </button>
+        <button class="vote-btn oaxaca" onclick="vote('OAXACA', this)" id="btn-oaxaca">
+            <span class="spinner"></span>
+            <span class="checkmark">✓</span>
+            🌮 Oaxaca
+        </button>
+        <button class="vote-btn jalisco" onclick="vote('JALISCO', this)" id="btn-jalisco">
+            <span class="spinner"></span>
+            <span class="checkmark">✓</span>
+            🎻 Jalisco
+        </button>
+        <button class="vote-btn guanajuato" onclick="vote('GUANAJUATO', this)" id="btn-guanajuato">
+            <span class="spinner"></span>
+            <span class="checkmark">✓</span>
+            🎭 Guanajuato
+        </button>
+    </div>
+
+    <div class="results">
+        <h2>📊 Resultados en Vivo</h2>
+        <div id="results-container">
+            <p style="text-align: center; color: #999;">Esperando votos...</p>
+        </div>
+    </div>
+
+    <div id="message" class="message"></div>
+</div>
 
 <script>
-async function sendVote(option) {
-  try {
-    const res = await fetch(`/api/vote/${option}`, { method: 'POST' });
-    if (!res.ok) {
-      const data = await res.json().catch(()=>({}));
-      alert(data.error || 'La votación no está abierta.');
+    let sessionOpen = false;
+
+    // Función para votar con animaciones mejoradas
+    async function vote(option, button) {
+        if (!sessionOpen) {
+            showMessage('La votación no está activa', 'error');
+            return;
+        }
+
+        // Agregar clase de carga
+        button.classList.add('loading');
+
+        // Efecto de onda
+        button.classList.add('clicked');
+        setTimeout(() => button.classList.remove('clicked'), 600);
+
+        try {
+            const response = await fetch(`/api/vote/${option}`, {
+                method: 'POST'
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Animación de éxito
+                button.classList.remove('loading');
+                button.classList.add('success');
+
+                setTimeout(() => {
+                    button.classList.remove('success');
+                }, 1000);
+
+                showMessage(data.message || '¡Voto registrado con éxito!', 'success');
+                fetchResults();
+            } else {
+                button.classList.remove('loading');
+                showMessage(data.message || 'Error al votar', 'error');
+            }
+        } catch (error) {
+            button.classList.remove('loading');
+            showMessage('Error de conexión', 'error');
+        }
     }
-  } catch (e) { console.error(e); }
-}
 
-async function refreshResults(){
-  try{
-    const res = await fetch('/api/results');
-    const data = await res.json();
-    document.getElementById('r-michoacan').textContent = data.MICHOACAN ?? 0;
-    document.getElementById('r-oaxaca').textContent = data.OAXACA ?? 0;
-    document.getElementById('r-jalisco').textContent = data.JALISCO ?? 0;
-    document.getElementById('r-guanajuato').textContent = data.GUANAJUATO ?? 0;
-  }catch(e){ console.error(e); }
-}
+    // Función para mostrar mensajes
+    function showMessage(text, type) {
+        const messageEl = document.getElementById('message');
+        messageEl.textContent = text;
+        messageEl.className = `message ${type} show`;
 
-async function refreshStatus(){
-  try{
-    const res = await fetch('/api/session-status');
-    const data = await res.json();
-    document.getElementById('openMsg').textContent = data.open ? 'Votación abierta' : 'Votación cerrada';
-    const t = data.remainingSeconds|0;
-    if (data.open) {
-      document.getElementById('timer').textContent = `Tiempo restante: ${t}s`;
-    } else {
-      document.getElementById('timer').textContent = '';
+        setTimeout(() => {
+            messageEl.classList.remove('show');
+        }, 3000);
     }
-  }catch(e){ console.error(e); }
-}
 
-setInterval(()=>{ refreshResults(); refreshStatus(); }, 1000);
-refreshResults();
-refreshStatus();
+    // Verificar estado de la sesión
+    async function checkSessionStatus() {
+        try {
+            const response = await fetch('/api/session-status');
+            const data = await response.json();
+
+            sessionOpen = data.open;
+            const statusEl = document.getElementById('status');
+            const statusText = document.getElementById('status-text');
+
+            if (data.open) {
+                statusEl.className = 'status open';
+                statusText.textContent = data.secondsLeft
+                    ? `✅ Votación ABIERTA (${data.secondsLeft}s restantes)`
+                    : '✅ Votación ABIERTA';
+
+                // Habilitar botones
+                document.querySelectorAll('.vote-btn').forEach(btn => {
+                    btn.disabled = false;
+                });
+            } else {
+                statusEl.className = 'status closed';
+                statusText.textContent = '❌ Votación CERRADA';
+
+                // Deshabilitar botones
+                document.querySelectorAll('.vote-btn').forEach(btn => {
+                    btn.disabled = true;
+                });
+            }
+        } catch (error) {
+            console.error('Error al verificar estado:', error);
+        }
+    }
+
+    // Obtener resultados
+    async function fetchResults() {
+        try {
+            const response = await fetch('/api/results');
+            const data = await response.json();
+
+            const container = document.getElementById('results-container');
+
+            if (data.votes && Object.keys(data.votes).length > 0) {
+                const total = Object.values(data.votes).reduce((a, b) => a + b, 0);
+
+                container.innerHTML = Object.entries(data.votes)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([option, votes]) => {
+                        const percentage = total > 0 ? Math.round((votes / total) * 100) : 0;
+                        return `
+                                <div class="result-item">
+                                    <div class="result-label">
+                                        <span>${option}</span>
+                                        <span>${votes} votos</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${percentage}%">
+                                            ${percentage}%
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                    }).join('');
+            } else {
+                container.innerHTML = '<p style="text-align: center; color: #999;">Esperando votos...</p>';
+            }
+        } catch (error) {
+            console.error('Error al obtener resultados:', error);
+        }
+    }
+
+    // Polling cada segundo
+    setInterval(() => {
+        checkSessionStatus();
+        fetchResults();
+    }, 1000);
+
+    // Cargar datos iniciales
+    checkSessionStatus();
+    fetchResults();
 </script>
 </body>
 </html>
