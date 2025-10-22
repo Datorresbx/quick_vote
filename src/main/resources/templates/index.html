@@ -20,6 +20,11 @@
     .status { text-align:center; margin:8px 0 16px; }
     .muted { opacity:.8; }
     .footer { text-align:center; margin-top:24px; font-size:12px; opacity:.7; }
+
+    button:hover {
+        background-color: #0056b3;
+        transform: scale(1.1); /* efecto de agrandado */
+    }
   </style>
 </head>
 <body>
@@ -33,13 +38,6 @@
     <button class="oaxaca" onclick="sendVote('OAXACA')">Oaxaca</button>
     <button class="jalisco" onclick="sendVote('JALISCO')">Jalisco</button>
     <button class="guanajuato" onclick="sendVote('GUANAJUATO')">Guanajuato</button>
-  </div>
-
-  <div class="card" style="margin-top:16px;">
-    <div class="row"><div>Michoacán</div><div id="r-michoacan">0</div></div>
-    <div class="row"><div>Oaxaca</div><div id="r-oaxaca">0</div></div>
-    <div class="row"><div>Jalisco</div><div id="r-jalisco">0</div></div>
-    <div class="row"><div>Guanajuato</div><div id="r-guanajuato">0</div></div>
   </div>
 
   <div class="footer">Puedes votar múltiples veces mientras la votación esté abierta.</div>
