@@ -1,62 +1,423 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin - Votación</title>
-  <style>
-    body { font-family: system-ui, Arial, sans-serif; margin: 0; padding: 16px; background:#0b132b; color:#fff; }
-    h1 { text-align:center; }
-    .panel { max-width:640px; margin:0 auto; background:#1c2541; padding:16px; border-radius:12px; }
-    label { display:block; margin-bottom:8px; }
-    input[type=number] { width:100%; padding:10px; border-radius:8px; border:none; margin-bottom:12px; }
-    button { padding:12px 16px; border:none; border-radius:10px; font-weight:700; }
-    .start { background:#06d6a0; color:#0b132b; }
-    .stop { background:#ef476f; color:#0b132b; }
-    .row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #263055; }
-    .row:last-child { border-bottom:none; }
-    .muted { opacity:.8; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💀 Admin - Quick Vote</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Gradiente de Día de Muertos: Morado a Naranja */
+            background: linear-gradient(135deg, #8B2FC9 0%, #D84315 50%, #FF6F00 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .panel {
+            background:
+                    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
+                    url('https://images.unsplash.com/photo-1518638150340-f706e86654de?w=800&q=80');
+            background-size: cover;
+            background-position: center;
+
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 640px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(139, 47, 201, 0.4);
+            border: 3px solid #FF6F00;
+        }
+
+        h1 {
+            text-align: center;
+            color: #8B2FC9;
+            margin-bottom: 30px;
+            font-size: 32px;
+            text-shadow: 2px 2px 4px rgba(255, 111, 0, 0.3);
+        }
+
+        h1::before {
+            content: '💀 ';
+        }
+
+        h1::after {
+            content: ' 💀';
+        }
+
+        h3 {
+            color: #D84315;
+            margin: 30px 0 20px 0;
+            font-size: 22px;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(255, 111, 0, 0.2);
+        }
+
+        .control-section {
+            background: rgba(255, 248, 225, 0.8);
+            padding: 25px;
+            border-radius: 12px;
+            border: 3px solid #FF6F00;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(139, 47, 201, 0.2);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #8B2FC9;
+            font-size: 16px;
+        }
+
+        input[type=number] {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: 3px solid #FFB300;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            background: white;
+            color: #D84315;
+            transition: all 0.3s ease;
+        }
+
+        input[type=number]:focus {
+            outline: none;
+            border-color: #8B2FC9;
+            box-shadow: 0 0 15px rgba(139, 47, 201, 0.3);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            flex: 1;
+            padding: 16px 20px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .start {
+            background: linear-gradient(135deg, #00E676 0%, #00BFA5 100%);
+            color: #004D40;
+            border: 2px solid #00796B;
+        }
+
+        .stop {
+            background: linear-gradient(135deg, #FF6F00 0%, #D84315 100%);
+            color: white;
+            border: 2px solid #BF360C;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        #status.active {
+            background: linear-gradient(135deg, #00E676 0%, #00BFA5 100%);
+            color: #004D40;
+            border: 3px solid #00796B;
+            animation: pulse-status 2s ease-in-out infinite;
+        }
+
+        #status.inactive {
+            background: linear-gradient(135deg, #FFF176 0%, #FFB300 100%);
+            color: #BF360C;
+            border: 3px solid #FF6F00;
+        }
+
+        #status.stopped {
+            background: linear-gradient(135deg, #8B2FC9 0%, #C2185B 100%);
+            color: #FCE4EC;
+            border: 3px solid #880E4F;
+        }
+
+        @keyframes pulse-status {
+            0%, 100% { box-shadow: 0 0 15px rgba(0, 230, 118, 0.6); }
+            50% { box-shadow: 0 0 30px rgba(0, 230, 118, 0.8); }
+        }
+
+        .results-section {
+            background: rgba(255, 248, 225, 0.95);
+            padding: 25px;
+            border-radius: 12px;
+            border: 3px solid #FF6F00;
+            box-shadow: 0 4px 15px rgba(139, 47, 201, 0.2);
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #FFB300;
+            transition: all 0.3s ease;
+        }
+
+        .row:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(139, 47, 201, 0.2);
+        }
+
+        .row:last-child {
+            margin-bottom: 0;
+        }
+
+        .row-label {
+            font-weight: 600;
+            color: #D84315;
+            font-size: 18px;
+        }
+
+        .row-value {
+            font-weight: 700;
+            color: #8B2FC9;
+            font-size: 24px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #FFF176 0%, #FFB300 100%);
+            border-radius: 8px;
+            min-width: 60px;
+            text-align: center;
+            border: 2px solid #FF6F00;
+        }
+
+        .total-votes {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #8B2FC9 0%, #E91E63 100%);
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            border: 3px solid #880E4F;
+            box-shadow: 0 4px 15px rgba(139, 47, 201, 0.3);
+        }
+
+        @media (max-width: 480px) {
+            .panel {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-<h1>Panel de Administración</h1>
 <div class="panel">
-  <label for="seconds">Duración (segundos)</label>
-  <input id="seconds" type="number" min="5" value="60" />
-  <div style="display:flex; gap:8px;">
-    <button class="start" onclick="startSession()">Iniciar votación</button>
-    <button class="stop" onclick="stopSession()">Detener</button>
-  </div>
-  <p class="muted" id="status"></p>
+    <h1>Panel de Administración</h1>
 
-  <h3>Resultados en tiempo real</h3>
-  <div class="row"><div>Michoacán</div><div id="r-michoacan">0</div></div>
-  <div class="row"><div>Oaxaca</div><div id="r-oaxaca">0</div></div>
-  <div class="row"><div>Jalisco</div><div id="r-jalisco">0</div></div>
-  <div class="row"><div>Guanajuato</div><div id="r-guanajuato">0</div></div>
+    <div class="control-section">
+        <label for="seconds">⏱️ Duración de la votación (segundos)</label>
+        <input id="seconds" type="number" min="5" max="600" value="120" />
+
+        <div class="button-group">
+            <button class="start" onclick="startSession()">
+                🚀 Iniciar votación
+            </button>
+            <button class="stop" onclick="stopSession()">
+                🛑 Detener
+            </button>
+        </div>
+
+        <div id="status" class="inactive">
+            💭 Sin actividad
+        </div>
+    </div>
+
+    <div class="results-section">
+        <h3>📊 Resultados en Tiempo Real</h3>
+
+        <div class="row">
+            <span class="row-label">🦋 Michoacán</span>
+            <span class="row-value" id="r-michoacan">0</span>
+        </div>
+
+        <div class="row">
+            <span class="row-label">🌮 Oaxaca</span>
+            <span class="row-value" id="r-oaxaca">0</span>
+        </div>
+
+        <div class="row">
+            <span class="row-label">🎻 Jalisco</span>
+            <span class="row-value" id="r-jalisco">0</span>
+        </div>
+
+        <div class="row">
+            <span class="row-label">🎭 Guanajuato</span>
+            <span class="row-value" id="r-guanajuato">0</span>
+        </div>
+
+        <div class="total-votes" id="total-votes">
+            💀 Total de votos: 0 💀
+        </div>
+    </div>
 </div>
 
 <script>
-async function startSession(){
-  const seconds = parseInt(document.getElementById('seconds').value||'0',10);
-  const res = await fetch('/api/admin/start?seconds='+seconds, { method:'POST' });
-  if(res.ok){ document.getElementById('status').textContent = 'Votación iniciada por ' + seconds + 's'; }
-  else { alert('Error iniciando'); }
-}
-async function stopSession(){
-  const res = await fetch('/api/admin/stop', { method:'POST' });
-  if(res.ok){ document.getElementById('status').textContent = 'Votación detenida'; }
-}
-async function refreshResults(){
-  const res = await fetch('/api/results');
-  const data = await res.json();
-  document.getElementById('r-michoacan').textContent = data.MICHOACAN ?? 0;
-  document.getElementById('r-oaxaca').textContent = data.OAXACA ?? 0;
-  document.getElementById('r-jalisco').textContent = data.JALISCO ?? 0;
-  document.getElementById('r-guanajuato').textContent = data.GUANAJUATO ?? 0;
-}
-setInterval(refreshResults, 1000);
-refreshResults();
+    let currentSessionActive = false;
+
+    async function startSession() {
+        const seconds = parseInt(document.getElementById('seconds').value || '120', 10);
+
+        if (seconds < 5) {
+            updateStatus('⚠️ La duración mínima es 5 segundos', 'inactive');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/admin/start?seconds=' + seconds, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                currentSessionActive = true;
+                updateStatus(`🎉 Votación iniciada por ${seconds} segundos`, 'active');
+            } else {
+                updateStatus('❌ Error al iniciar la votación', 'stopped');
+            }
+        } catch (error) {
+            updateStatus('❌ Error de conexión', 'stopped');
+        }
+    }
+
+    async function stopSession() {
+        try {
+            const res = await fetch('/api/admin/stop', { method: 'POST' });
+
+            if (res.ok) {
+                currentSessionActive = false;
+                updateStatus('🔒 Votación detenida manualmente', 'stopped');
+            } else {
+                updateStatus('❌ Error al detener', 'stopped');
+            }
+        } catch (error) {
+            updateStatus('❌ Error de conexión', 'stopped');
+        }
+    }
+
+    function updateStatus(message, statusClass) {
+        const statusEl = document.getElementById('status');
+        statusEl.textContent = message;
+        statusEl.className = statusClass;
+    }
+
+    async function refreshResults() {
+        try {
+            const res = await fetch('/api/results');
+            const data = await res.json();
+
+            // Actualizar valores individuales
+            const michoacan = data.votes?.MICHOACAN || 0;
+            const oaxaca = data.votes?.OAXACA || 0;
+            const jalisco = data.votes?.JALISCO || 0;
+            const guanajuato = data.votes?.GUANAJUATO || 0;
+
+            document.getElementById('r-michoacan').textContent = michoacan;
+            document.getElementById('r-oaxaca').textContent = oaxaca;
+            document.getElementById('r-jalisco').textContent = jalisco;
+            document.getElementById('r-guanajuato').textContent = guanajuato;
+
+            // Calcular y mostrar total
+            const total = michoacan + oaxaca + jalisco + guanajuato;
+            document.getElementById('total-votes').textContent = `💀 Total de votos: ${total} 💀`;
+
+            // Verificar estado de la sesión
+            const statusRes = await fetch('/api/session-status');
+            const statusData = await statusRes.json();
+
+            if (statusData.open && statusData.secondsLeft) {
+                updateStatus(`⏳ Votación activa: ${statusData.secondsLeft}s restantes`, 'active');
+                currentSessionActive = true;
+            } else if (!statusData.open && currentSessionActive) {
+                updateStatus('⏱️ Votación finalizada', 'stopped');
+                currentSessionActive = false;
+            } else if (!statusData.open && total === 0) {
+                updateStatus('💭 Sin actividad', 'inactive');
+            }
+
+        } catch (error) {
+            console.error('Error al obtener resultados:', error);
+        }
+    }
+
+    // Actualizar cada segundo
+    setInterval(refreshResults, 1000);
+
+    // Cargar datos iniciales
+    refreshResults();
 </script>
 </body>
 </html>
