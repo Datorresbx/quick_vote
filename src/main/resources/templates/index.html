@@ -21,17 +21,49 @@
             padding: 20px;
         }
 
-        container {
-            background-image: url('https://images.unsplash.com/photo-1518638150340-f706e86654de?w=800');
+        .container {
+            /* IMPORTANTE: Primero el color de respaldo */
+            background-color: #ffffff;
+
+            /* Luego la imagen */
+            background-image: url('https://i.pinimg.com/736x/13/85/58/13855868363cff2b29a20d4335fff2ec.jpg');
             background-size: cover;
-            background-position: center;
+            background-position: center center;
             background-repeat: no-repeat;
+            background-attachment: scroll;
+
+            /* Overlay blanco semi-transparente */
+            background-blend-mode: lighten;
 
             border-radius: 20px;
             padding: 40px;
             max-width: 500px;
             width: 100%;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+            /* Para navegadores que soporten backdrop-filter */
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Capa overlay para mejorar legibilidad */
+        .container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.75);
+            border-radius: 20px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Todo el contenido debe estar sobre el overlay */
+        .container > * {
+            position: relative;
+            z-index: 1;
         }
 
         h1 {
