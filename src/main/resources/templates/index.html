@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vota - ¿Cuál es tu estado favorito?</title>
+    <title>Vota por tu estado favorito</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,8 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* Gradiente de Día de Muertos: Morado a Naranja */
+            background: linear-gradient(135deg, #8B2FC9 0%, #D84315 50%, #FF6F00 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -22,62 +23,35 @@
         }
 
         .container {
-            /* IMPORTANTE: Primero el color de respaldo */
-            background-color: #ffffff;
-
-            /* Luego la imagen */
-            background-image: url('https://i.pinimg.com/736x/13/85/58/13855868363cff2b29a20d4335fff2ec.jpg');
+            background:
+                    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
+                    url('https://images.unsplash.com/photo-1518638150340-f706e86654de?w=800&q=80');
             background-size: cover;
-            background-position: center center;
-            background-repeat: no-repeat;
-            background-attachment: scroll;
-
-            /* Overlay blanco semi-transparente */
-            background-blend-mode: lighten;
+            background-position: center;
 
             border-radius: 20px;
             padding: 40px;
             max-width: 500px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-
-            /* Para navegadores que soporten backdrop-filter */
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Capa overlay para mejorar legibilidad */
-        .container::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.75);
-            border-radius: 20px;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* Todo el contenido debe estar sobre el overlay */
-        .container > * {
-            position: relative;
-            z-index: 1;
+            box-shadow: 0 20px 60px rgba(139, 47, 201, 0.4);
+            border: 3px solid #FF6F00;
         }
 
         h1 {
             text-align: center;
-            color: #333;
+            /* Color morado Día de Muertos */
+            color: #8B2FC9;
             margin-bottom: 10px;
             font-size: 28px;
+            text-shadow: 2px 2px 4px rgba(255, 111, 0, 0.3);
         }
 
         .subtitle {
             text-align: center;
-            color: #666;
+            color: #D84315;
             margin-bottom: 30px;
             font-size: 16px;
+            font-weight: 600;
         }
 
         .status {
@@ -87,18 +61,46 @@
             margin-bottom: 25px;
             font-weight: 600;
             transition: all 0.3s ease;
+            font-size: 15px;
+        }
+
+        .status.waiting {
+            /* Amarillo/Naranja de cempasúchil */
+            background: linear-gradient(135deg, #FFF176 0%, #FFB300 100%);
+            color: #BF360C;
+            border: 3px solid #FF6F00;
+            animation: pulse-waiting 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-waiting {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 111, 0, 0.7); }
+            50% { transform: scale(1.02); box-shadow: 0 0 20px 10px rgba(255, 111, 0, 0); }
         }
 
         .status.open {
-            background: #d4edda;
-            color: #155724;
-            border: 2px solid #c3e6cb;
+            /* Verde/Turquesa vibrante */
+            background: linear-gradient(135deg, #00E676 0%, #00BFA5 100%);
+            color: #004D40;
+            border: 3px solid #00796B;
+            animation: pulse-open 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-open {
+            0%, 100% { box-shadow: 0 0 15px rgba(0, 230, 118, 0.6); }
+            50% { box-shadow: 0 0 30px rgba(0, 230, 118, 0.8); }
         }
 
         .status.closed {
-            background: #f8d7da;
-            color: #721c24;
-            border: 2px solid #f5c6cb;
+            /* Morado/Rosa oscuro */
+            background: linear-gradient(135deg, #8B2FC9 0%, #C2185B 100%);
+            color: #FCE4EC;
+            border: 3px solid #880E4F;
+        }
+
+        .time-info {
+            font-size: 18px;
+            margin-top: 8px;
+            font-weight: 700;
         }
 
         .vote-buttons {
@@ -118,10 +120,10 @@
             position: relative;
             overflow: hidden;
             transform: translateY(0);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
-        /* Efecto de onda al hacer clic */
         .vote-btn::before {
             content: '';
             position: absolute;
@@ -140,19 +142,16 @@
             height: 300px;
         }
 
-        /* Animación de escala al hacer clic */
         .vote-btn:active {
             transform: scale(0.95) translateY(2px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
-        /* Hover effect */
         .vote-btn:hover:not(:disabled) {
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
         }
 
-        /* Animación de éxito después del clic */
         @keyframes success-pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
@@ -163,7 +162,6 @@
             animation: success-pulse 0.5s ease;
         }
 
-        /* Animación de checkmark */
         @keyframes checkmark {
             0% { transform: scale(0) rotate(0deg); }
             50% { transform: scale(1.2) rotate(180deg); }
@@ -186,41 +184,49 @@
 
         .vote-btn:disabled {
             cursor: not-allowed;
-            opacity: 0.6;
+            opacity: 0.5;
+            filter: grayscale(50%);
         }
 
+        /* Colores de Día de Muertos para cada estado */
         .michoacan {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            /* Morado intenso */
+            background: linear-gradient(135deg, #8B2FC9 0%, #AA00FF 100%);
             color: white;
         }
 
         .oaxaca {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            /* Rosa mexicano vibrante */
+            background: linear-gradient(135deg, #E91E63 0%, #FF4081 100%);
             color: white;
         }
 
         .jalisco {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            /* Naranja cempasúchil */
+            background: linear-gradient(135deg, #FF6F00 0%, #FFB300 100%);
             color: white;
         }
 
         .guanajuato {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            /* Turquesa/Cyan vibrante */
+            background: linear-gradient(135deg, #00ACC1 0%, #00E5FF 100%);
             color: white;
         }
 
         .results {
-            background: #f8f9fa;
+            background: rgba(255, 248, 225, 0.95);
             padding: 25px;
             border-radius: 12px;
-            border: 2px solid #e9ecef;
+            border: 3px solid #FF6F00;
+            box-shadow: 0 4px 15px rgba(139, 47, 201, 0.2);
         }
 
         .results h2 {
-            color: #333;
+            color: #8B2FC9;
             margin-bottom: 20px;
             font-size: 22px;
             text-align: center;
+            text-shadow: 1px 1px 2px rgba(255, 111, 0, 0.2);
         }
 
         .result-item {
@@ -232,20 +238,21 @@
             justify-content: space-between;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #555;
+            color: #D84315;
         }
 
         .progress-bar {
             height: 30px;
-            background: #e9ecef;
+            background: #FFE0B2;
             border-radius: 15px;
             overflow: hidden;
             position: relative;
+            border: 2px solid #FF6F00;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, #8B2FC9 0%, #E91E63 50%, #FF6F00 100%);
             border-radius: 15px;
             transition: width 0.5s ease;
             display: flex;
@@ -254,6 +261,7 @@
             color: white;
             font-weight: 600;
             font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .message {
@@ -264,6 +272,7 @@
             font-weight: 600;
             opacity: 0;
             transition: opacity 0.3s ease;
+            border: 2px solid;
         }
 
         .message.show {
@@ -271,18 +280,17 @@
         }
 
         .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 2px solid #c3e6cb;
+            background: linear-gradient(135deg, #00E676 0%, #00BFA5 100%);
+            color: #004D40;
+            border-color: #00796B;
         }
 
         .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 2px solid #f5c6cb;
+            background: linear-gradient(135deg, #FF6F00 0%, #D84315 100%);
+            color: white;
+            border-color: #BF360C;
         }
 
-        /* Animación de carga en los botones */
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -309,6 +317,15 @@
             pointer-events: none;
         }
 
+        /* Decoración de calaveras (opcional) */
+        h1::before {
+            content: '💀 ';
+        }
+
+        h1::after {
+            content: ' 💀';
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 25px;
@@ -327,34 +344,41 @@
 </head>
 <body>
 <div class="container">
-    <h1>🗳️ Quick Vote</h1>
-    <p class="subtitle">¿Cuál es tu estado mexicano favorito?</p>
+    <p class="subtitle">Vota por tu estado favorito</p>
 
-    <div id="status" class="status closed">
-        <span id="status-text">Cargando...</span>
+    <div id="status" class="status waiting">
+        <div id="status-text">⏳ Cargando información...</div>
+        <div id="time-info" class="time-info" style="display: none;"></div>
     </div>
 
     <div class="vote-buttons">
-        <button class="vote-btn michoacan" onclick="vote('MICHOACAN', this)" id="btn-michoacan">
+        <button class="vote-btn michoacan" onclick="vote('MICHOACAN', this)" id="btn-michoacan" disabled>
             <span class="spinner"></span>
             <span class="checkmark">✓</span>
             🦋 Michoacán
         </button>
-        <button class="vote-btn oaxaca" onclick="vote('OAXACA', this)" id="btn-oaxaca">
+        <button class="vote-btn oaxaca" onclick="vote('OAXACA', this)" id="btn-oaxaca" disabled>
             <span class="spinner"></span>
             <span class="checkmark">✓</span>
             🌮 Oaxaca
         </button>
-        <button class="vote-btn jalisco" onclick="vote('JALISCO', this)" id="btn-jalisco">
+        <button class="vote-btn jalisco" onclick="vote('JALISCO', this)" id="btn-jalisco" disabled>
             <span class="spinner"></span>
             <span class="checkmark">✓</span>
             🎻 Jalisco
         </button>
-        <button class="vote-btn guanajuato" onclick="vote('GUANAJUATO', this)" id="btn-guanajuato">
+        <button class="vote-btn guanajuato" onclick="vote('GUANAJUATO', this)" id="btn-guanajuato" disabled>
             <span class="spinner"></span>
             <span class="checkmark">✓</span>
             🎭 Guanajuato
         </button>
+    </div>
+
+    <div class="results">
+        <h2>💀 Resultados en Vivo 💀</h2>
+        <div id="results-container">
+            <p style="text-align: center; color: #FF6F00;">Esperando votos...</p>
+        </div>
     </div>
 
     <div id="message" class="message"></div>
@@ -363,17 +387,13 @@
 <script>
     let sessionOpen = false;
 
-    // Función para votar con animaciones mejoradas
     async function vote(option, button) {
         if (!sessionOpen) {
-            showMessage('La votación no está activa', 'error');
+            showMessage('⏳ La votación aún no ha iniciado', 'error');
             return;
         }
 
-        // Agregar clase de carga
         button.classList.add('loading');
-
-        // Efecto de onda
         button.classList.add('clicked');
         setTimeout(() => button.classList.remove('clicked'), 600);
 
@@ -385,7 +405,6 @@
             const data = await response.json();
 
             if (response.ok) {
-                // Animación de éxito
                 button.classList.remove('loading');
                 button.classList.add('success');
 
@@ -393,7 +412,7 @@
                     button.classList.remove('success');
                 }, 1000);
 
-                showMessage(data.message || '¡Voto registrado con éxito!', 'success');
+                showMessage(data.message || '¡Voto registrado con éxito! 🎉', 'success');
                 fetchResults();
             } else {
                 button.classList.remove('loading');
@@ -405,7 +424,6 @@
         }
     }
 
-    // Función para mostrar mensajes
     function showMessage(text, type) {
         const messageEl = document.getElementById('message');
         messageEl.textContent = text;
@@ -416,7 +434,6 @@
         }, 3000);
     }
 
-    // Verificar estado de la sesión
     async function checkSessionStatus() {
         try {
             const response = await fetch('/api/session-status');
@@ -425,20 +442,39 @@
             sessionOpen = data.open;
             const statusEl = document.getElementById('status');
             const statusText = document.getElementById('status-text');
+            const timeInfo = document.getElementById('time-info');
 
             if (data.open) {
                 statusEl.className = 'status open';
-                statusText.textContent = data.secondsLeft
-                    ? `✅ Votación ABIERTA (${data.secondsLeft}s restantes)`
-                    : '✅ Votación ABIERTA';
+                statusText.textContent = '✅ ¡VOTACIÓN ABIERTA!';
+
+                if (data.secondsLeft) {
+                    timeInfo.style.display = 'block';
+                    timeInfo.textContent = `⏱️ ${data.secondsLeft} segundos restantes`;
+                } else {
+                    timeInfo.style.display = 'none';
+                }
 
                 // Habilitar botones
                 document.querySelectorAll('.vote-btn').forEach(btn => {
                     btn.disabled = false;
                 });
             } else {
-                statusEl.className = 'status closed';
-                statusText.textContent = '❌ Votación CERRADA';
+                // Votación cerrada o esperando
+                const hasVotes = await hasAnyVotes();
+
+                if (hasVotes) {
+                    // Si ya hubo votos, mostrar como cerrada
+                    statusEl.className = 'status closed';
+                    statusText.textContent = '🔒 Votación Finalizada';
+                    timeInfo.style.display = 'none';
+                } else {
+                    // Si no hay votos, está esperando a iniciar
+                    statusEl.className = 'status waiting';
+                    statusText.textContent = '⏳ Esperando a que se abra la votación';
+                    timeInfo.style.display = 'block';
+                    timeInfo.textContent = '🌟 La votación iniciará pronto...';
+                }
 
                 // Deshabilitar botones
                 document.querySelectorAll('.vote-btn').forEach(btn => {
@@ -450,7 +486,21 @@
         }
     }
 
-    // Obtener resultados
+    async function hasAnyVotes() {
+        try {
+            const response = await fetch('/api/results');
+            const data = await response.json();
+
+            if (data.votes && Object.keys(data.votes).length > 0) {
+                const total = Object.values(data.votes).reduce((a, b) => a + b, 0);
+                return total > 0;
+            }
+            return false;
+        } catch (error) {
+            return false;
+        }
+    }
+
     async function fetchResults() {
         try {
             const response = await fetch('/api/results');
@@ -461,26 +511,37 @@
             if (data.votes && Object.keys(data.votes).length > 0) {
                 const total = Object.values(data.votes).reduce((a, b) => a + b, 0);
 
-                container.innerHTML = Object.entries(data.votes)
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([option, votes]) => {
-                        const percentage = total > 0 ? Math.round((votes / total) * 100) : 0;
-                        return `
-                                <div class="result-item">
-                                    <div class="result-label">
-                                        <span>${option}</span>
-                                        <span>${votes} votos</span>
-                                    </div>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${percentage}%">
-                                            ${percentage}%
+                if (total > 0) {
+                    container.innerHTML = Object.entries(data.votes)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([option, votes]) => {
+                            const percentage = Math.round((votes / total) * 100);
+                            const emoji = {
+                                'MICHOACAN': '🦋',
+                                'OAXACA': '🌮',
+                                'JALISCO': '🎻',
+                                'GUANAJUATO': '🎭'
+                            }[option] || '📍';
+
+                            return `
+                                    <div class="result-item">
+                                        <div class="result-label">
+                                            <span>${emoji} ${option}</span>
+                                            <span>${votes} votos</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: ${percentage}%">
+                                                ${percentage}%
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            `;
-                    }).join('');
+                                `;
+                        }).join('');
+                } else {
+                    container.innerHTML = '<p style="text-align: center; color: #FF6F00;">Esperando votos...</p>';
+                }
             } else {
-                container.innerHTML = '<p style="text-align: center; color: #999;">Esperando votos...</p>';
+                container.innerHTML = '<p style="text-align: center; color: #FF6F00;">Esperando votos...</p>';
             }
         } catch (error) {
             console.error('Error al obtener resultados:', error);
